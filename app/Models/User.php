@@ -44,4 +44,8 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function pagamento(){
+        return $this->hasMany(\App\Models\Pagamento::class);
+    }
 }
