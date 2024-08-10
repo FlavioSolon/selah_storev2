@@ -12,6 +12,9 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Tables\Columns\ColorColumn;
+
 
 class ProdutoResource extends Resource
 {
@@ -22,63 +25,129 @@ class ProdutoResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('nome')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('preco')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('quantidade')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('tipo')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('modelo')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('cor')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('tamanho')
-                    ->maxLength(255),
-                Forms\Components\Toggle::make('em_estoque')
-                    ->required(),
+        ->schema([
+            Forms\Components\TextInput::make('nome')
+            ->required()
+            ->maxLength(255)
+            ->label('Nome do Produto')
+            ->columnSpan('full')
+            ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
+
+        Forms\Components\TextInput::make('preco')
+            ->required()
+            ->numeric()
+            ->step(0.01)
+            ->label('Preço')
+            ->prefix('R$')
+            ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
+
+        Forms\Components\TextInput::make('quantidade')
+            ->required()
+            ->numeric()
+            ->label('Quantidade em Estoque')
+            ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
+
+        Forms\Components\Select::make('tipo')
+            ->label('Tipo de Produto')
+            ->options([
+                'Camisa' => 'Camisa',
+                'Ecobag' => 'Ecobag',
+            ])
+            ->required()
+            ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
+
+        Forms\Components\TextInput::make('modelo')
+            ->maxLength(255)
+            ->label('Modelo')
+            ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
+
+        ColorPicker::make('cor')
+            ->label('Cor')
+            ->rgb()
+            ->required()
+            ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
+
+        Forms\Components\Select::make('tamanho')
+            ->label('Tamanho')
+            ->options([
+                'PP' => 'PP',
+                'P' => 'P',
+                'M' => 'M',
+                'G' => 'G',
+                'GG' => 'GG',
+                'XG' => 'XG',
+            ])
+            ->required()
+            ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
+
+        Forms\Components\Toggle::make('em_estoque')
+            ->label('Em Estoque')
+            ->default(true)
+            ->extraAttributes(['class' => 'my-4']),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('nome')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('preco')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('quantidade')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tipo')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('modelo')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('cor')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('tamanho')
-                    ->searchable(),
-                Tables\Columns\IconColumn::make('em_estoque')
-                    ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+        ->columns([
+            Tables\Columns\TextColumn::make('nome')
+                ->sortable()
+                ->searchable()
+                ->label('Nome')
+                ->extraAttributes(['style' => 'padding-right: 20px;']),
+
+            Tables\Columns\TextColumn::make('preco')
+                ->sortable()
+                ->label('Preço')
+                ->formatStateUsing(fn (string $state): string => 'R$ ' . number_format((float) $state, 2, ',', '.'))
+                ->extraAttributes(['style' => 'padding-right: 20px;']),
+
+            Tables\Columns\TextInputColumn::make('quantidade')
+                ->sortable()
+                ->label('Quantidade')
+                ->extraAttributes(['style' => 'padding-right: 20px;']),
+
+            Tables\Columns\TextColumn::make('tipo')
+                ->sortable()
+                ->label('Tipo')
+                ->extraAttributes(['style' => 'padding-right: 20px;']),
+
+            ColorColumn::make('cor')
+                ->copyable()
+                ->copyMessage('Cor copiada!')
+                ->copyMessageDuration(1500)
+                ->sortable()
+                ->label('Cor')
+                ->extraAttributes(['style' => 'padding-right: 20px;']),
+
+            Tables\Columns\TextColumn::make('tamanho')
+                ->sortable()
+                ->label('Tamanho')
+                ->extraAttributes(['style' => 'padding-right: 20px;']),
+
+            Tables\Columns\ToggleColumn::make('em_estoque')
+                ->label('Em Estoque')
+                ->sortable()
+                ->extraAttributes(['style' => 'padding-right: 20px;']),
+
+            Tables\Columns\TextColumn::make('created_at')
+                ->dateTime('d/m/Y H:i')
+                ->label('Criado em')
+                ->sortable()
+                ->extraAttributes(['style' => 'padding-right: 20px;']),
+
+            Tables\Columns\TextColumn::make('updated_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->extraAttributes(['style' => 'padding-right: 20px;']),
+
+            Tables\Columns\TextColumn::make('deleted_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->extraAttributes(['style' => 'padding-right: 20px;']),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
@@ -106,8 +175,7 @@ class ProdutoResource extends Resource
     {
         return [
             'index' => Pages\ListProdutos::route('/'),
-            'create' => Pages\CreateProduto::route('/create'),
-            'edit' => Pages\EditProduto::route('/{record}/edit'),
+
         ];
     }
 
