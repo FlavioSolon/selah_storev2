@@ -23,10 +23,10 @@ return new class extends Migration
             $table->integer('quantidade');
             $table->boolean('venda')->default(false);
             $table->boolean('encomenda')->default(false);
+            $table->string('observacao_pagamento')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['id_produto', 'id_vendendor']);
         });
         DB::statement('ALTER TABLE pagamentos ADD CHECK (venda != encomenda)');
     }

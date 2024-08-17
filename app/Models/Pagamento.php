@@ -21,6 +21,7 @@ class Pagamento extends Model
         'quantidade',
         'venda',
         'encomenda',
+        'observacao_pagamento'
     ];
 
     protected $casts = [
