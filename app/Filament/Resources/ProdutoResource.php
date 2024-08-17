@@ -32,7 +32,6 @@ class ProdutoResource extends Resource
             ->label('Nome do Produto')
             ->columnSpan('full')
             ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
-
         Forms\Components\TextInput::make('preco')
             ->required()
             ->numeric()
@@ -40,13 +39,11 @@ class ProdutoResource extends Resource
             ->label('Preço')
             ->prefix('R$')
             ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
-
         Forms\Components\TextInput::make('quantidade')
             ->required()
             ->numeric()
             ->label('Quantidade em Estoque')
             ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
-
         Forms\Components\Select::make('tipo')
             ->label('Tipo de Produto')
             ->options([
@@ -55,18 +52,13 @@ class ProdutoResource extends Resource
             ])
             ->required()
             ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
-
         Forms\Components\TextInput::make('modelo')
             ->maxLength(255)
             ->label('Modelo')
             ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
-
-        ColorPicker::make('cor')
-            ->label('Cor')
-            ->rgb()
-            ->required()
-            ->extraAttributes(['class' => 'my-2']), // Adiciona margem vertical para espaçamento
-
+        Forms\Components\TextInput::make('cor')
+            ->maxLength(255)
+            ->label('Cor'),
         Forms\Components\Select::make('tamanho')
             ->label('Tamanho')
             ->options([
@@ -96,7 +88,6 @@ class ProdutoResource extends Resource
                 ->searchable()
                 ->label('Nome')
                 ->extraAttributes(['style' => 'padding-right: 20px;']),
-
             Tables\Columns\TextColumn::make('preco')
                 ->sortable()
                 ->label('Preço')
@@ -112,20 +103,14 @@ class ProdutoResource extends Resource
                 ->sortable()
                 ->label('Tipo')
                 ->extraAttributes(['style' => 'padding-right: 20px;']),
-
-            ColorColumn::make('cor')
-                ->copyable()
-                ->copyMessage('Cor copiada!')
-                ->copyMessageDuration(1500)
+            Tables\Columns\TextColumn::make('cor')
                 ->sortable()
                 ->label('Cor')
                 ->extraAttributes(['style' => 'padding-right: 20px;']),
-
             Tables\Columns\TextColumn::make('tamanho')
                 ->sortable()
                 ->label('Tamanho')
                 ->extraAttributes(['style' => 'padding-right: 20px;']),
-
             Tables\Columns\ToggleColumn::make('em_estoque')
                 ->label('Em Estoque')
                 ->sortable()
@@ -136,7 +121,6 @@ class ProdutoResource extends Resource
                 ->label('Criado em')
                 ->sortable()
                 ->extraAttributes(['style' => 'padding-right: 20px;']),
-
             Tables\Columns\TextColumn::make('updated_at')
                 ->dateTime()
                 ->sortable()
