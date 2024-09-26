@@ -60,11 +60,10 @@ class PagamentoResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id_produto')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('produto.nome')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('id_vendendor')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Vendedor')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nome_cliente')
                     ->searchable(),
@@ -124,8 +123,8 @@ class PagamentoResource extends Resource
     {
         return [
             'index' => Pages\ListPagamentos::route('/'),
-            'create' => Pages\CreatePagamento::route('/create'),
-            'edit' => Pages\EditPagamento::route('/{record}/edit'),
+            //'create' => Pages\CreatePagamento::route('/create'),
+            //'edit' => Pages\EditPagamento::route('/{record}/edit'),
         ];
     }
 }

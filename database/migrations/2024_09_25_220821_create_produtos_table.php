@@ -9,18 +9,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
             $table->decimal('preco', 8, 2);
             $table->integer('quantidade');
-            $table->string('tipo')->nullable();
-            $table->string('modelo')->nullable();
-            $table->string('cor')->nullable();
-            $table->string('tamanho')->nullable();
             $table->boolean('em_estoque')->default(true);
+            $table->foreignId('categoria_id')->constrained(); // Relaciona com a tabela categorias
             $table->timestamps();
             $table->softDeletes();
         });

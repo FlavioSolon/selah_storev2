@@ -11,17 +11,15 @@ class Pagamento extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'id_produto',
         'id_vendendor',
         'nome_cliente',
         'telefone',
         'tipo_pagamento',
         'valor',
         'desconto',
-        'quantidade',
         'venda',
         'encomenda',
-        'observacao_pagamento'
+        'observacao_pagamento',
     ];
 
     protected $casts = [
@@ -29,17 +27,13 @@ class Pagamento extends Model
         'encomenda' => 'boolean',
     ];
 
-    /**
-     * Relação com Produto.
-     */
-    public function produto()
+    // Relacionamento muitos-para-muitos com produtos
+    public function produtos()
     {
-        return $this->belongsTo(Produto::class, 'id_produto');
+        return $this->belongsToMany(Produto::class, 'pagamento_produto')
+                    ->withPivot('quantidade', 'preco_unitario');
     }
 
-    /**
-     * Relação com Usuário (Vendedor).
-     */
     public function vendedor()
     {
         return $this->belongsTo(User::class, 'id_vendendor');

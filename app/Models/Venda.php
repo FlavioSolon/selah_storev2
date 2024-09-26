@@ -11,7 +11,6 @@ class Venda extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'id_produto',
         'id_pagamento',
         'aprovada',
     ];
@@ -20,13 +19,6 @@ class Venda extends Model
         'aprovada' => 'boolean',
     ];
 
-    /**
-     * Relação com Produto.
-     */
-    public function produto()
-    {
-        return $this->belongsTo(Produto::class, 'id_produto');
-    }
 
     /**
      * Relação com Pagamento.

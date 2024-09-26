@@ -11,7 +11,6 @@ class Encomenda extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'id_produto',
         'id_pagamento',
         'entregue',
         'aprovada',
@@ -21,14 +20,6 @@ class Encomenda extends Model
         'entregue' => 'boolean',
         'aprovada' => 'boolean',
     ];
-
-    /**
-     * Relação com Produto.
-     */
-    public function produto()
-    {
-        return $this->belongsTo(Produto::class, 'id_produto');
-    }
 
     /**
      * Relação com Pagamento.

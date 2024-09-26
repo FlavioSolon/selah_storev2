@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('encomendas', function (Blueprint $table) {
+        Schema::create('vendas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_produto')->constrained('produtos')->onDelete('set null');
             $table->foreignId('id_pagamento')->constrained('pagamentos')->onDelete('set null');
-            $table->boolean('entregue')->default(false);
             $table->boolean('aprovada')->default(false);
             $table->timestamps();
             $table->softDeletes();
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('encomendas');
+        Schema::dropIfExists('vendas');
     }
 };

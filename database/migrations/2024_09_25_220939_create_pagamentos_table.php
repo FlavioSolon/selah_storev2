@@ -13,14 +13,12 @@ return new class extends Migration
     {
         Schema::create('pagamentos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_produto')->constrained('produtos')->onDelete('set null');
             $table->foreignId('id_vendendor')->constrained('users')->onDelete('set null');
             $table->string('nome_cliente');
             $table->string('telefone');
             $table->string('tipo_pagamento');
             $table->decimal('valor', 10, 2);
             $table->decimal('desconto', 10, 2)->nullable();
-            $table->integer('quantidade');
             $table->boolean('venda')->default(false);
             $table->boolean('encomenda')->default(false);
             $table->string('observacao_pagamento')->nullable();

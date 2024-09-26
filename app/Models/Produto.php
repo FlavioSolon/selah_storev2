@@ -14,34 +14,35 @@ class Produto extends Model
         'nome',
         'preco',
         'quantidade',
-        'tipo',
-        'modelo',
-        'cor',
-        'tamanho',
         'em_estoque',
+        'categoria_id',
     ];
 
-    /**
-     * Relacionamento com Pagamento.
-     */
+    // Relacionamento com a tabela categorias
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class);
+    }
+
+    // Relacionamento muitos-para-muitos com variantes
+    public function variantes()
+    {
+        return $this->belongsToMany(Variante::class, 'produto_variantes');
+    }
+
     public function pagamentos()
     {
-        return $this->hasMany(Pagamento::class, 'id_produto');
+        return $this->hasMany(Pagamento::class);
     }
 
-    /**
-     * Relacionamento com Encomenda.
-     */
-    public function encomendas()
-    {
-        return $this->hasMany(Encomenda::class, 'id_produto');
-    }
-
-    /**
-     * Relacionamento com Venda.
-     */
     public function vendas()
     {
-        return $this->hasMany(Venda::class, 'id_produto');
+        return $this->hasMany(Venda::class);
+    }
+
+    public function encomendas()
+    {
+        return $this->hasMany(Encomenda::class);
     }
 }
+
