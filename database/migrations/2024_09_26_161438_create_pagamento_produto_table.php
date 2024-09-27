@@ -13,8 +13,14 @@ return new class extends Migration
     {
         Schema::create('pagamento_produto', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pagamento_id')->constrained('pagamentos');
-            $table->foreignId('produto_id')->constrained('produtos');
+            $table->foreignId('pagamento_id')
+                ->constrained('pagamentos')
+                ->onDelete('cascade'); // Deleta os produtos quando o pagamento é excluído
+
+            $table->foreignId('produto_id')
+                ->constrained('produtos')
+                ->onDelete('restrict'); // Impede deletar produtos que já foram vendidos
+
             $table->integer('quantidade');
             $table->decimal('preco_unitario', 8, 2);
             $table->timestamps();

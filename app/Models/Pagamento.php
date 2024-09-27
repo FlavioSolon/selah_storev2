@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,9 +8,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Pagamento extends Model
 {
     use HasFactory, SoftDeletes;
+    protected $table = 'pagamentos';
 
     protected $fillable = [
-        'id_vendendor',
+        'id_vendendor',  // Verifique se este nome está correto
         'nome_cliente',
         'telefone',
         'tipo_pagamento',
@@ -31,7 +31,8 @@ class Pagamento extends Model
     public function produtos()
     {
         return $this->belongsToMany(Produto::class, 'pagamento_produto')
-                    ->withPivot('quantidade', 'preco_unitario');
+                    ->withPivot('quantidade', 'preco_unitario')
+                    ->withTimestamps(); // Adiciona timestamps à tabela pivô
     }
 
     public function vendedor()
