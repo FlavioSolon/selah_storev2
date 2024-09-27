@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Models\Variante;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -34,9 +35,16 @@ class ProdutoResource extends Resource
                     ->numeric(),
                 Forms\Components\Toggle::make('em_estoque')
                     ->required(),
-                Forms\Components\TextInput::make('categoria_id')
-                    ->required()
-                    ->numeric(),
+                Forms\Components\Select::make('categoria_id')
+                    ->relationship('categoria', 'nome')  // Carrega as categorias existentes
+                    ->required(),
+
+                Forms\Components\Select::make('variantes')
+                    ->multiple()
+                    ->relationship('variantes', 'valor')  // Relacionamento com variantes
+                    ->options(Variante::all()->pluck('valor', 'id'))  // Carrega todas as variantes disponíveis
+                    ->label('Variantes')
+                    ->required(),
             ]);
     }
 

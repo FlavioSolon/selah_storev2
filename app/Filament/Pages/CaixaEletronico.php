@@ -23,8 +23,7 @@ class CaixaEletronico extends Page implements HasForms
     protected static ?string $navigationIcon = 'heroicon-o-calculator';
     protected static string $view = 'filament.pages.caixa-eletronico';
 
-    public $produto_id;
-    public $variante_id;
+    public $produto_variante_id;
     public $quantidade = 1;
     public $desconto = 0;
     public $valor = 0;
@@ -50,7 +49,7 @@ class CaixaEletronico extends Page implements HasForms
     // Função para calcular o valor do produto
     public function calcularValor()
     {
-        if ($this->produtoSelecionado && $this->variante_id) {
+        if ($this->produtoSelecionado) {
             $produto = $this->produtoSelecionado;
             $quantidade = (int) $this->quantidade;
             $desconto = (float) $this->desconto;
@@ -65,25 +64,28 @@ class CaixaEletronico extends Page implements HasForms
     }
 
     // Atualiza o produto selecionado e carrega as variantes
-    public function updatedProdutoId($produto_id)
+    public function updatedProdutoVarianteId($produto_variante_id)
     {
-        $this->produtoSelecionado = Produto::find($produto_id);
+        $this->produtoSelecionado = Produto::with('variantes')->find($produto_variante_id);
         $this->calcularValor();
     }
 
-    // Adiciona o produto ao carrinho e emite o evento
+    // Adiciona o produto ao carrinho
     public function adicionarCarrinho()
     {
-        if ($this->produtoSelecionado && $this->variante_id) {
+        if ($this->produtoSelecionado) {
             $produto = $this->produtoSelecionado;
-            $variante = Variante::find($this->variante_id);
             $quantidade = (int) $this->quantidade;
             $desconto = (float) $this->desconto;
 
+            // Concatena as variantes do produto
+            $variantesConcatenadas = $produto->variantes
+                ->map(fn($variante) => "{$variante->valor}")
+                ->implode(' - ');
+
             $itemCarrinho = [
                 'id' => $produto->id,
-                'nome' => $produto->nome,
-                'variante' => $variante->valor,
+                'nome' => "{$produto->nome} - {$variantesConcatenadas}", // Concatena nome e variantes
                 'preco_unitario' => $produto->preco,
                 'quantidade' => $quantidade,
                 'subtotal' => ($produto->preco * $quantidade) - $desconto,
@@ -96,10 +98,10 @@ class CaixaEletronico extends Page implements HasForms
             $this->atualizarTotalCarrinho();
 
             // Reseta os campos
-            $this->reset(['produto_id', 'variante_id', 'quantidade', 'desconto', 'valor', 'venda']);
+            $this->reset(['produto_variante_id', 'quantidade', 'desconto', 'valor', 'venda']);
         } else {
             Notification::make()
-                ->title('Erro: Selecione um produto e uma variante.')
+                ->title('Erro: Selecione um produto.')
                 ->danger()
                 ->send();
         }
@@ -129,33 +131,34 @@ class CaixaEletronico extends Page implements HasForms
         return true;
     }
 
-
+    // Formulário do Filament
     protected function getFormSchema(): array
     {
         return [
             Section::make('Adicionar Produto')
                 ->columns(2)
                 ->schema([
-                    Select::make('produto_id')
-                        ->label('Produto')
-                        ->options(Produto::all()->pluck('nome', 'id'))
-                        ->required()
-                        ->reactive()
-                        ->afterStateUpdated(fn() => $this->updatedProdutoId($this->produto_id)),
-
-                    Select::make('variante_id')
-                        ->label('Escolha a Variante')
+                    // Select concatenado com nome do produto e variantes
+                    Select::make('produto_variante_id')
+                        ->label('Produto e Variantes')
                         ->options(function () {
-                            if ($this->produto_id) {
-                                return Variante::whereHas('produtos', function ($query) {
-                                    $query->where('produto_id', $this->produto_id);
-                                })->pluck('valor', 'id');
-                            }
-                            return [];
+                            return Produto::with('variantes')
+                                ->get()
+                                ->mapWithKeys(function ($produto) {
+                                    // Concatena as variantes
+                                    $variantesConcatenadas = $produto->variantes
+                                        ->map(fn($variante) => "{$variante->valor}")
+                                        ->implode(' - ');
+
+                                    return [
+                                        $produto->id => "{$produto->nome} - {$variantesConcatenadas}"
+                                    ];
+                                });
                         })
+                        ->searchable()  // Adiciona a opção de pesquisar
                         ->required()
                         ->reactive()
-                        ->afterStateUpdated(fn() => $this->calcularValor()),
+                        ->afterStateUpdated(fn() => $this->updatedProdutoVarianteId($this->produto_variante_id)),
 
                     TextInput::make('quantidade')
                         ->label('Quantidade')
@@ -176,15 +179,12 @@ class CaixaEletronico extends Page implements HasForms
                         ->label('Valor Total')
                         ->numeric()
                         ->disabled(),
-
                     Toggle::make('venda')
                         ->label('Venda')
-                        ->default(true)
-                        ->disabled(),
+                        ->default(true),
                 ]),
         ];
     }
-
 
     // Finaliza o pagamento
     public function submit()
@@ -285,6 +285,4 @@ class CaixaEletronico extends Page implements HasForms
             ->success()
             ->send();
     }
-
-
 }

@@ -21,7 +21,8 @@
             @forelse($carrinho as $index => $item)
                 <div class="flex justify-between mb-2 p-2 bg-gray-100 dark:bg-gray-700 rounded">
                     <div>
-                        <p><strong>{{ $item['nome'] }}</strong> ({{ $item['variante'] }})</p>
+                        <!-- Exibe o nome do produto com suas variantes concatenadas -->
+                        <p><strong>{{ $item['nome'] }}</strong></p>
                         <p>Qtd: {{ $item['quantidade'] }}</p>
                     </div>
                     <div class="text-right">
@@ -78,6 +79,5 @@
                 </x-filament::button>
             </form>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
     </div>
 </x-filament-panels::page>
