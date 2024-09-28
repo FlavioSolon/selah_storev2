@@ -181,7 +181,6 @@ class CaixaEletronico extends Page implements HasForms
                         ->disabled(),
                     Toggle::make('venda')
                         ->label('Venda')
-                        ->disabled()
                         ->default(true),
                 ]),
         ];
@@ -189,109 +188,101 @@ class CaixaEletronico extends Page implements HasForms
 
     // Finaliza o pagamento
     public function submit()
-{
-    // Valida os dados do cliente
-    $this->validate([
-        'nome_cliente' => 'required|string|max:255',
-        'telefone' => 'required|string|max:20',
-        'tipo_pagamento' => 'required|string|in:PIX,DINHEIRO,CREDITO,DEBITO',
-    ]);
+    {
 
-    // Verifica se o carrinho está válido
-    if (!$this->atualizarTotalCarrinho()) {
-        return;
-    }
-
-    $user = auth()->user();
-    if (!$user) {
-        Notification::make()
-            ->title('Erro: Usuário não autenticado.')
-            ->danger()
-            ->send();
-        return;
-    }
-
-    // Inicialmente, definimos que todos os itens são venda
-    $venda = true;
-
-    // Tenta criar o pagamento
-    try {
-        $pagamento = Pagamento::create([
-            'nome_cliente' => $this->nome_cliente,
-            'telefone' => $this->telefone,
-            'tipo_pagamento' => $this->tipo_pagamento,
-            'valor' => $this->totalCarrinho,
-            'observacao_pagamento' => $this->observacao_pagamento,
-            'id_vendendor' => $user->id,
-            'venda' => $venda,
-            'encomenda' => false,  // Será ajustado caso não haja estoque
+        // Valida os dados do cliente
+        $this->validate([
+            'nome_cliente' => 'required|string|max:255',
+            'telefone' => 'required|string|max:20',
+            'tipo_pagamento' => 'required|string|in:PIX,DINHEIRO,CREDITO,DEBITO',
         ]);
-    } catch (\Exception $e) {
-        Notification::make()
-            ->title('Erro ao processar o pagamento.')
-            ->danger()
-            ->send();
-        return;
-    }
 
-    // Processa cada item do carrinho
-    foreach ($this->carrinho as $item) {
-        $produto = Produto::find($item['id']);
-
-        if (!$produto) {
-            Notification::make()
-                ->title("Erro: Produto não encontrado")
-                ->danger()
-                ->send();
-            continue;
+        // Verifica se o carrinho está válido
+        if (!$this->atualizarTotalCarrinho()) {
+            return;
         }
 
-        // Se o produto não tem estoque suficiente ou está sem estoque, marca como encomenda
-        if ($produto->quantidade < $item['quantidade'] || !$produto->em_estoque) {
-            $venda = false;  // Definimos que o pagamento será uma encomenda
+        $user = auth()->user();
+        if (!$user) {
+            Notification::make()
+                ->title('Erro: Usuário não autenticado.')
+                ->danger()
+                ->send();
+            return;
+        }
+        $venda = collect($this->carrinho)->every(fn($item) => $item['venda']);
+        $encomenda = !$venda;
 
-            // Associar o produto ao pagamento como encomenda
-            $pagamento->produtos()->attach($produto->id, [
-                'quantidade' => $item['quantidade'],
-                'preco_unitario' => $item['preco_unitario'],
+        // Tenta criar o pagamento
+        try {
+            $pagamento = Pagamento::create([
+                'nome_cliente' => $this->nome_cliente,
+                'telefone' => $this->telefone,
+                'tipo_pagamento' => $this->tipo_pagamento,
+                'valor' => $this->totalCarrinho,
+                'observacao_pagamento' => $this->observacao_pagamento,
+                'id_vendendor' => $user->id,
+                'venda' => $venda,
+                'encomenda' => $encomenda,
             ]);
+        } catch (\Exception $e) {
+            dd('Erro ao processar o pagamento:', $e->getMessage());
+        }
 
-            Encomenda::create([
-                'id_pagamento' => $pagamento->id,
-                'aprovada' => true,
-                'entregue' => false,
-            ]);
-        } else {
-            // Se há estoque suficiente, registra como venda
-            $pagamento->produtos()->attach($produto->id, [
-                'quantidade' => $item['quantidade'],
-                'preco_unitario' => $item['preco_unitario'],
-            ]);
+        // Processa cada item do carrinho
+        foreach ($this->carrinho as $item) {
+            $produto = Produto::find($item['id']);
 
-            // Atualiza o estoque
+            if (!$produto) {
+                Notification::make()
+                    ->title("Erro: Produto não encontrado")
+                    ->danger()
+                    ->send();
+                continue;
+            }
+
+            // Verifica se há estoque suficiente
+            if ($produto->quantidade < $item['quantidade']) {
+                Notification::make()
+                    ->title("Erro: Estoque insuficiente para o produto {$produto->nome}.")
+                    ->danger()
+                    ->send();
+                return; // Interrompe o processo em caso de erro de estoque
+            }
+
+            // Tenta associar o produto ao pagamento
+            try {
+                $pagamento->produtos()->attach($produto->id, [
+                    'quantidade' => $item['quantidade'],
+                    'preco_unitario' => $item['preco_unitario'],
+                ]);
+            } catch (\Exception $e) {
+                dd('Erro ao associar o produto ao pagamento:', $e->getMessage());
+            }
+
+            // Atualiza o estoque do produto
             $produto->quantidade -= $item['quantidade'];
             $produto->save();
 
-            // Cria o registro de venda
-            Venda::create([
-                'id_pagamento' => $pagamento->id,
-                'aprovada' => true,
-            ]);
+            // Cria o registro de venda ou encomenda
+            if ($item['venda']) {
+                Venda::create([
+                    'id_pagamento' => $pagamento->id,
+                    'aprovada' => true,
+                ]);
+            } else {
+                Encomenda::create([
+                    'id_pagamento' => $pagamento->id,
+                    'aprovada' => false,
+                ]);
+            }
         }
+
+        // Limpa o carrinho e o total
+        $this->reset(['carrinho', 'totalCarrinho']);
+        Notification::make()
+            ->title('Transação Concluída com Sucesso!')
+            ->success()
+            ->send();
     }
-
-    // Atualiza o tipo de pagamento baseado nos itens do carrinho
-    $pagamento->update([
-        'venda' => $venda,
-        'encomenda' => !$venda,
-    ]);
-
-    // Limpa o carrinho e o total
-    $this->reset(['carrinho', 'totalCarrinho']);
-    Notification::make()
-        ->title('Transação Concluída com Sucesso!')
-        ->success()
-        ->send();
-}
-
 }

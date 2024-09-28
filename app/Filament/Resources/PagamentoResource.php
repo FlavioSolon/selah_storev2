@@ -36,11 +36,6 @@ class PagamentoResource extends Resource
                     ->numeric(),
                 Forms\Components\TextInput::make('desconto')
                     ->numeric(),
-                Forms\Components\TextInput::make('produtos_com_variantes')
-                    ->label('Produtos e Variantes')
-                    ->default(fn (Pagamento $record) => $record ? $record->getProdutosComVariantesAttribute() : null)
-                    ->disabled()
-                    ->columnSpanFull(),
                 Forms\Components\Toggle::make('venda')
                     ->required(),
                 Forms\Components\Toggle::make('encomenda')
@@ -66,7 +61,6 @@ class PagamentoResource extends Resource
                 Tables\Columns\TextColumn::make('desconto')
                     ->numeric()
                     ->sortable(),
-
                 Tables\Columns\IconColumn::make('venda')
                     ->boolean(),
                 Tables\Columns\IconColumn::make('encomenda')

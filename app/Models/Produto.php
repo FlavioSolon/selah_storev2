@@ -32,9 +32,7 @@ class Produto extends Model
 
     public function pagamentos()
     {
-        return $this->belongsToMany(Pagamento::class, 'pagamento_produto')
-                    ->withPivot('quantidade', 'preco_unitario', 'variante_id')
-                    ->withTimestamps();
+        return $this->hasMany(Pagamento::class);
     }
 
     public function vendas()

@@ -31,23 +31,10 @@ class Pagamento extends Model
     public function produtos()
     {
         return $this->belongsToMany(Produto::class, 'pagamento_produto')
-                    ->withPivot('quantidade', 'preco_unitario', 'variante_id')
-                    ->withTimestamps();
+                    ->withPivot('quantidade', 'preco_unitario')
+                    ->withTimestamps(); // Adiciona timestamps à tabela pivô
     }
 
-    public function getProdutosComVariantesAttribute()
-    {
-        return $this->produtos->map(function ($produto) {
-            $variantes = Variante::where('id', $produto->pivot->variante_id)->pluck('valor')->implode(', ');
-            return "{$produto->nome} - {$variantes}";
-        })->implode(' | ');
-    }
-    public function variantes()
-    {
-        return $this->belongsToMany(Variante::class, 'produto_variantes', 'produto_id', 'variante_id')
-                    ->using(PagamentoProduto::class)
-                    ->withTimestamps();
-    }
     public function vendedor()
     {
         return $this->belongsTo(User::class, 'id_vendendor');

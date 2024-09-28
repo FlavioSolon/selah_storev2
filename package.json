@@ -12,11 +12,5 @@
     },
     "dependencies": {
         "cleave.js": "^1.6.0"
-    },
-    "name": "selah_store",
-    "version": "1.0.0",
-    "main": "index.js",
-    "repository": "https://github.com/FlavioSolon/selah_storev2.git",
-    "author": "FlavioSolon <118930194+FlavioSolon@users.noreply.github.com>",
-    "license": "MIT"
+    }
 }
