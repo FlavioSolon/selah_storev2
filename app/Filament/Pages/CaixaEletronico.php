@@ -181,6 +181,7 @@ class CaixaEletronico extends Page implements HasForms
                         ->disabled(),
                     Toggle::make('venda')
                         ->label('Venda')
+                        ->disabled()
                         ->default(true),
                 ]),
         ];
